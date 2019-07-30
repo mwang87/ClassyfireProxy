@@ -24,14 +24,7 @@ def entities(entity_name):
     inchi_key = entity_name.split(".")[0]
     return_format = entity_name.split(".")[1]
     result = r.get(entity_name)
-
-    try:
-        if json.loads(result)["status"] == "SUCCESS":
-            result = result
-        else:
-            result = None
-    except:
-        result = None
+    
     if result == None:
         result = get_entity.delay(inchi_key, return_format=return_format)
         while(1):
@@ -39,6 +32,8 @@ def entities(entity_name):
                 break
             sleep(3)
         result = result.get()
+
+        #TODO: Check that the response is ok
 
         r.set(entity_name, result)
     
