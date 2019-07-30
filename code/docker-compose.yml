@@ -26,4 +26,4 @@ services:
       - default
     volumes:
     - ../cache:/data
-    command: redis-server --appendonly yes
+    command: ["redis-server", "--appendonly", "yes"]

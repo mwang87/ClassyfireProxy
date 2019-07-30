@@ -18,19 +18,20 @@ import redis
 
 r = redis.Redis(host='redis', port=6379, db=0)
 
-@app.route('/entities/', methods=['GET'])
+@app.route('/entities/<entity_name>', methods=['GET'])
 #@cache.cached()
-def entities():
-    inchi_key = request.values["inchikey"]
-    result = r.get(inchi_key)
+def entities(entity_name):
+    inchi_key = entity_name.split(".")[0]
+    return_format = entity_name.split(".")[1]
+    result = r.get(entity_name)
     if result == None:
-        result = get_entity.delay(inchi_key)
+        result = get_entity.delay(inchi_key, return_format=return_format)
         while(1):
             if result.ready():
                 break
             sleep(3)
         result = result.get()
 
-        r.set(inchi_key, result)
+        r.set(entity_name, result)
     
     return result

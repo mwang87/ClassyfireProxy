@@ -1,1 +1,1 @@
-localhost:5057/entities/?inchikey=RYYVLZVUVIJVGH-UHFFFAOYSA-N 
+localhost:5057/entities/RYYVLZVUVIJVGH-UHFFFAOYSA-N.json
