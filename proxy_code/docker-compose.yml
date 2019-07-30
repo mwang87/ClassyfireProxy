@@ -22,8 +22,10 @@ services:
       - default
   classyfire-redis:
     image: redis
+    container_name: classyfireproxy_redis
     networks:
       - default
     volumes:
     - ../cache:/data
     command: ["redis-server", "--appendonly", "yes"]
+
