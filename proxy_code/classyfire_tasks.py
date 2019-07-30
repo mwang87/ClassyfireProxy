@@ -10,9 +10,11 @@ import os
 print("Before Celery App")
 celery_instance = Celery('cytoscape_tasks', backend='redis://classyfire-redis', broker='redis://classyfire-redis')
 
-@celery_instance.task(rate_limit="5/m")
+#@celery_instance.task(rate_limit="5/m")
+@celery_instance.task(rate_limit="60/m")
 def get_entity(inchikey, return_format="json"):
-    url = "http://classyfire.wishartlab.com"
+    #url = "http://classyfire.wishartlab.com"
+    url = "https://cfb.fiehnlab.ucdavis.edu"
 
     """Given a InChIKey for a previously queried structure, fetch the
      classification results.
