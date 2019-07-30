@@ -16,7 +16,7 @@ import urllib
 from time import sleep
 import redis
 
-r = redis.Redis(host='redis', port=6379, db=0)
+r = redis.Redis(host='classyfire-redis', port=6379, db=0)
 
 @app.route('/entities/<entity_name>', methods=['GET'])
 #@cache.cached()

@@ -8,7 +8,7 @@ import json
 import os
 
 print("Before Celery App")
-celery_instance = Celery('cytoscape_tasks', backend='redis://redis', broker='redis://redis')
+celery_instance = Celery('cytoscape_tasks', backend='redis://classyfire-redis', broker='redis://classyfire-redis')
 
 @celery_instance.task(rate_limit="5/m")
 def get_entity(inchikey, return_format="json"):
