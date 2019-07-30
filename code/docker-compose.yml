@@ -11,7 +11,7 @@ services:
     networks:
       - default
     restart: unless-stopped
-  worker1:
+  classyfire-worker1:
     build: .
     container_name: classyfireproxy_worker1
     command: /app/run_celery_worker.sh
