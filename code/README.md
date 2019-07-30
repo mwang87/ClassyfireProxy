@@ -1,0 +1,1 @@
+localhost:5057/entities/?inchikey=RYYVLZVUVIJVGH-UHFFFAOYSA-N 
