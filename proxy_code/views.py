@@ -42,3 +42,10 @@ def entities(entity_name):
         result = result.get()
     
     return result
+
+@app.route('/keycount', methods=['GET'])
+def keycount():
+    key_count = 0
+    for k in redis_client.keys('*'):
+        key_count += 1
+    return str(key_count)
