@@ -16,25 +16,29 @@ import urllib
 from time import sleep
 import redis
 
-r = redis.Redis(host='classyfire-redis', port=6379, db=0)
+redis_client = redis.Redis(host='classyfire-redis', port=6379, db=0)
 
 @app.route('/entities/<entity_name>', methods=['GET'])
-#@cache.cached()
 def entities(entity_name):
+    block = True
+
+    if "nonblock" in request.values:
+        block = False
+
     inchi_key = entity_name.split(".")[0]
     return_format = entity_name.split(".")[1]
-    result = r.get(entity_name)
+    result = redis_client.get(entity_name)
     
     if result == None:
         result = get_entity.delay(inchi_key, return_format=return_format)
+
+        if block == False:
+            return "{}"
+
         while(1):
             if result.ready():
                 break
-            sleep(3)
+            sleep(0.1)
         result = result.get()
-
-        #TODO: Check that the response is ok
-
-        r.set(entity_name, result)
     
     return result

@@ -12,6 +12,9 @@ RUN pip3 install pathvalidate
 RUN pip3 install psutil
 RUN pip3 install redis
 RUN pip3 install -U Celery
+RUN pip3 install pyamqp
+RUN pip3 install pyMolNetEnhancer
+RUN pip3 install requests_cache
 
 COPY . /app
 WORKDIR /app

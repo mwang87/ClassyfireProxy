@@ -8,8 +8,11 @@ services:
     command: /app/run_server.sh
     depends_on: 
       - classyfire-redis
+      - classyfire-mqrabbit
     networks:
       - default
+    volumes:
+    - ../cache:/data
     restart: unless-stopped
   classyfire-worker1:
     build: .
@@ -18,6 +21,7 @@ services:
     restart: unless-stopped
     depends_on: 
       - classyfire-redis
+      - classyfire-mqrabbit
     networks:
       - default
   classyfire-redis:
@@ -28,4 +32,11 @@ services:
     volumes:
     - ../cache:/data
     command: ["redis-server", "--appendonly", "yes"]
+  classyfire-mqrabbit:
+    image: rabbitmq:latest
+    container_name: classyfireproxy_mqrabbit
+    networks:
+      - default
+    
+
 
