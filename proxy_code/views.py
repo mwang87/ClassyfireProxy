@@ -33,7 +33,7 @@ def entities(entity_name):
         result = get_entity.delay(inchi_key, return_format=return_format)
 
         if block == False:
-            return "{}"
+            abort(404)
 
         while(1):
             if result.ready():
@@ -49,12 +49,3 @@ def keycount():
     for k in redis_client.keys('*'):
         key_count += 1
     return str(key_count)
-
-@app.route('/entities_dump', methods=['GET'])
-def entities_dump():
-    output_list = []
-    key_count = 0
-    for k in redis_client.keys('*'):
-        output_list.append(json.loads(redis_client.get(k)))
-    return json.dumps(output_list)
-

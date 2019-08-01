@@ -61,4 +61,17 @@ def populate_entities(entities_list):
         if result == None:
             redis_client.set(entity_name, json.dumps(entity))
 
+@celery_instance.task()
+def get_entities_batch(key_list):
+    output_entities = [json.loads(redis_client.get(key)) for key in key_list]
+    return output_entities
+
+
+@celery_instance.task()
+def get_all_keys():
+    all_keys = []
+    for k in redis_client.keys('*'):
+        all_keys.append(k)
+
+    return all_keys
 

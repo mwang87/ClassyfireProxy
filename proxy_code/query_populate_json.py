@@ -8,7 +8,7 @@ import glob
 import json
 from classyfire_tasks import populate_entities
 
-all_json_files = glob.glob(os.path.join(sys.argv[1], "**/*.json"))
+all_json_files = glob.glob(os.path.join(sys.argv[1], "**/*.json"), recursive=True)
 for json_filename in all_json_files:
     try:
         print(os.path.basename(json_filename))
