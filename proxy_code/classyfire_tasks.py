@@ -8,13 +8,16 @@ import json
 import os
 import redis
 
+import requests_cache
+requests_cache.install_cache('/data/request_cache')
+
 print("Before Celery App")
 #celery_instance = Celery('cytoscape_tasks', backend='redis://classyfire-redis', broker='redis://classyfire-redis')
 celery_instance = Celery('cytoscape_tasks', backend='rpc://classyfire-mqrabbit', broker='pyamqp://classyfire-mqrabbit')
 
 redis_client = redis.Redis(host='classyfire-redis', port=6379, db=0)
 
-@celery_instance.task(rate_limit="5/m")
+@celery_instance.task(rate_limit="10/m")
 #@celery_instance.task()
 def get_entity(inchikey, return_format="json"):
     url = "http://classyfire.wishartlab.com"
@@ -48,6 +51,37 @@ def get_entity(inchikey, return_format="json"):
         return r.text
     else:
         return result
+
+@celery_instance.task()
+def populate_batch_task(query_id, return_format="json"):
+    url = "http://classyfire.wishartlab.com"
+    r = requests.get('%s/queries/%s.%s' % (url, query_id, return_format))
+
+    r.raise_for_status()
+
+    all_entities = r.json()["entities"]
+    total_number_of_pages = r.json()["number_of_pages"]
+
+    for page in range(2, total_number_of_pages + 1):
+        while True:
+            r = requests.get('%s/queries/%s.%s?page=%d' % (url, query_id, return_format, page))
+            try:
+                r.raise_for_status()
+            except KeyboardInterrupt:
+                raise
+            except:
+                if r.status_code == 429:
+                    print("Retrying timeout")
+                    sleep(1)
+                    continue
+                else:
+                    raise
+            break
+
+        print(page, len(all_entities))
+        all_entities += r.json()["entities"]
+        
+    populate_entities(all_entities)
 
 
 @celery_instance.task()

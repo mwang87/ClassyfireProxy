@@ -24,6 +24,8 @@ services:
       - classyfire-mqrabbit
     networks:
       - default
+    volumes:
+    - ../cache:/data
   classyfire-redis:
     image: redis
     container_name: classyfireproxy_redis

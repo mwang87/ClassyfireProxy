@@ -4,6 +4,7 @@ from flask import abort, jsonify, render_template, request, redirect, url_for, m
 
 from app import app
 from classyfire_tasks import get_entity
+from classyfire_tasks import populate_batch_task
 
 from werkzeug.utils import secure_filename
 import os
@@ -49,3 +50,10 @@ def keycount():
     for k in redis_client.keys('*'):
         key_count += 1
     return str(key_count)
+
+@app.route('/populatebatch', methods=['GET'])
+def populatebatch():
+    batch_id = request.values["id"]
+    populate_batch_task.delay(batch_id)
+
+    return "queued"
