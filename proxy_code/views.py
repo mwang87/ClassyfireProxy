@@ -20,10 +20,10 @@ redis_client = redis.Redis(host='classyfire-redis', port=6379, db=0)
 
 @app.route('/entities/<entity_name>', methods=['GET'])
 def entities(entity_name):
-    block = True
+    block = False
 
-    if "nonblock" in request.values:
-        block = False
+    if "block" in request.values:
+        block = True
 
     inchi_key = entity_name.split(".")[0]
     return_format = entity_name.split(".")[1]
@@ -49,3 +49,12 @@ def keycount():
     for k in redis_client.keys('*'):
         key_count += 1
     return str(key_count)
+
+@app.route('/entities_dump', methods=['GET'])
+def entities_dump():
+    output_list = []
+    key_count = 0
+    for k in redis_client.keys('*'):
+        output_list.append(json.loads(redis_client.get(k)))
+    return json.dumps(output_list)
+
