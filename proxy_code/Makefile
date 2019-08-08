@@ -9,6 +9,10 @@ server-compose:
 	docker-compose build
 	docker-compose up -d
 
+server-compose-production:
+	docker-compose build
+	docker-compose -f docker-compose.yml -f docker-compose-production.yml up -d
+
 bash:
 	docker run -it classyfireproxy /bin/bash 
 
