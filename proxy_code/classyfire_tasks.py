@@ -43,7 +43,12 @@ def get_entity(inchikey, return_format="json"):
         r = requests.get('%s/entities/%s.%s' % (url, inchikey, return_format),
                         headers={
                             "Content-Type": "application/%s" % return_format})
-        r.raise_for_status()
+
+        try:
+            r.raise_for_status()
+        except:
+            open("/data/error_keys.txt", "a").write(inchikey + "\n")
+            raise
 
         #TODO: Check that the response is ok
         redis_client.set(entity_name, r.text)
