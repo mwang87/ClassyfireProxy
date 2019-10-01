@@ -16,6 +16,7 @@ import shutil
 import urllib
 from time import sleep
 import redis
+from models import ClassyFireEntity
 
 redis_client = redis.Redis(host='classyfire-redis', port=6379, db=0)
 

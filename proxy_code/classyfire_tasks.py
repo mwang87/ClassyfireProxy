@@ -7,6 +7,7 @@ from time import sleep
 import json
 import os
 import redis
+from models import ClassyFireEntity
 
 import requests_cache
 requests_cache.install_cache('/data/request_cache')

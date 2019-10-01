@@ -19,3 +19,5 @@ class CustomFlask(Flask):
 
 app = CustomFlask(__name__)
 app.config.from_object(__name__)
+
+db = SqliteDatabase("/data/database.db", pragmas=[('journal_mode', 'wal')])
