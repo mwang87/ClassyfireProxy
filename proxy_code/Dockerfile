@@ -15,6 +15,7 @@ RUN pip3 install -U Celery
 RUN pip3 install pyamqp
 RUN pip3 install pyMolNetEnhancer
 RUN pip3 install requests_cache
+RUN pip3 install peewee
 
 COPY . /app
 WORKDIR /app

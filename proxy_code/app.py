@@ -2,6 +2,7 @@
 import os
 
 from flask import Flask
+from peewee import SqliteDatabase
 
 APP_ROOT = os.path.dirname(os.path.realpath(__file__))
 DEBUG = False
