@@ -21,7 +21,7 @@ celery_instance = Celery('cytoscape_tasks', backend='rpc://classyfire-mqrabbit',
 url = "http://classyfire.wishartlab.com"
 #url = "https://cfb.fiehnlab.ucdavis.edu"
 
-@celery_instance.task(rate_limit="10/m")
+@celery_instance.task(rate_limit="8/s")
 #@celery_instance.task()
 def get_entity(inchikey, return_format="json"):
     """Given a InChIKey for a previously queried structure, fetch the
