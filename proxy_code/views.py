@@ -65,7 +65,7 @@ def keycounterror():
 def errorkeysjson():
     output_keys = []
     for entry in ClassyFireEntity.select().where(ClassyFireEntity.status == "ERROR"):
-        output_keys.append(entry.inchikey)
+        output_keys.append(entry.inchikey.replace(".json", ""))
 
     return json.dumps(output_keys)
 
@@ -74,7 +74,7 @@ def errorkeysjson():
 def errorkeystxt():
     output_keys = []
     for entry in ClassyFireEntity.select().where(ClassyFireEntity.status == "ERROR"):
-        output_keys.append(entry.inchikey)
+        output_keys.append(entry.inchikey.replace(".json", ""))
 
     return "\n".join(output_keys)
 
