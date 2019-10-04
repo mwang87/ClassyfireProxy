@@ -10,9 +10,6 @@ import redis
 from models import ClassyFireEntity
 from app import db
 
-#import requests_cache
-#requests_cache.install_cache('/data/request_cache')
-
 print("Before Celery App")
 celery_instance = Celery('cytoscape_tasks', backend='rpc://classyfire-mqrabbit', broker='pyamqp://classyfire-mqrabbit')
 
@@ -60,13 +57,18 @@ def get_entity(inchikey, return_format="json"):
         )
         open("/data/error_keys.txt", "a").write(inchikey + "\n")
         raise
-
-    #TODO: will need to update rather than create if already exists
-    ClassyFireEntity.create(
-        inchikey=entity_name,
-        responsetext=r.text,
-        status="DONE"
-    )
+    
+    try:
+        db_record = ClassyFireEntity.get(ClassyFireEntity.inchikey == entity_name)
+        db_record.responsetext = r.text
+        db_record.status = "DONE"
+        db_record.save()
+    except:    
+        ClassyFireEntity.create(
+            inchikey=entity_name,
+            responsetext=r.text,
+            status="DONE"
+        )
 
     return r.text
 
