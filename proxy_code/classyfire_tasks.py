@@ -61,6 +61,7 @@ def get_entity(inchikey, return_format="json"):
         open("/data/error_keys.txt", "a").write(inchikey + "\n")
         raise
 
+    #TODO: will need to update rather than create if already exists
     ClassyFireEntity.create(
         inchikey=entity_name,
         responsetext=r.text,
