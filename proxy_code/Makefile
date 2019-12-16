@@ -25,5 +25,8 @@ query_populate:
 query_populate_json:
 	docker exec -it classyfireproxy /app/query_populate_json.py ${JSON_DIR}
 
+query_populate_json_dump:
+	docker exec -it classyfireproxy /app/query_populate_json.py /data/dump
+
 dump:
 	docker exec -it classyfireproxy /app/dump_entities.py

@@ -16,8 +16,9 @@ import shutil
 import urllib
 from time import sleep
 import redis
+from models import ClassyFireEntity
 
-redis_client = redis.Redis(host='classyfire-redis', port=6379, db=0)
+#redis_client = redis.Redis(host='classyfire-redis', port=6379, db=0)
 
 @app.route('/entities/<entity_name>', methods=['GET'])
 def entities(entity_name):
@@ -28,28 +29,55 @@ def entities(entity_name):
 
     inchi_key = entity_name.split(".")[0]
     return_format = entity_name.split(".")[1]
-    result = redis_client.get(entity_name)
+
+    #Reading from Database
+    try:
+        db_record = ClassyFireEntity.get(ClassyFireEntity.inchikey == entity_name)
+        if db_record.status == "DONE":
+            return db_record.responsetext
+    except:
+        print("entry in DB not found")
     
-    if result == None:
-        result = get_entity.delay(inchi_key, return_format=return_format)
+    #Querying Server
+    result = get_entity.delay(inchi_key, return_format=return_format)
 
-        if block == False:
-            abort(404)
+    if block == False:
+        abort(404)
 
-        while(1):
-            if result.ready():
-                break
-            sleep(0.1)
-        result = result.get()
+    while(1):
+        if result.ready():
+            break
+        sleep(0.1)
+    result = result.get()
     
     return result
 
 @app.route('/keycount', methods=['GET'])
 def keycount():
-    key_count = 0
-    for k in redis_client.keys('*'):
-        key_count += 1
-    return str(key_count)
+    return str(ClassyFireEntity.select().count())
+
+@app.route('/keycounterror', methods=['GET'])
+def keycounterror():
+    return str(ClassyFireEntity.select().where(ClassyFireEntity.status == "ERROR").count())
+
+### TODO: Fix
+@app.route('/errorkeys.json', methods=['GET'])
+def errorkeysjson():
+    output_keys = []
+    for entry in ClassyFireEntity.select().where(ClassyFireEntity.status == "ERROR"):
+        output_keys.append(entry.inchikey.replace(".json", ""))
+
+    return json.dumps(output_keys)
+
+### TODO: Fix
+@app.route('/errorkeys.txt', methods=['GET'])
+def errorkeystxt():
+    output_keys = []
+    for entry in ClassyFireEntity.select().where(ClassyFireEntity.status == "ERROR"):
+        output_keys.append(entry.inchikey.replace(".json", ""))
+
+    return "\n".join(output_keys)
+
 
 @app.route('/populatebatch', methods=['GET'])
 def populatebatch():

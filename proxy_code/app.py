@@ -2,6 +2,7 @@
 import os
 
 from flask import Flask
+from peewee import SqliteDatabase
 
 APP_ROOT = os.path.dirname(os.path.realpath(__file__))
 DEBUG = False
@@ -19,3 +20,5 @@ class CustomFlask(Flask):
 
 app = CustomFlask(__name__)
 app.config.from_object(__name__)
+
+db = SqliteDatabase("/data/database.db", pragmas=[('journal_mode', 'wal')])
