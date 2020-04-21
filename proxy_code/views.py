@@ -28,7 +28,6 @@ def heartbeat():
 @app.route('/entities/<entity_name>', methods=['GET'])
 def entities(entity_name):
     block = False
-
     if "block" in request.values:
         block = True
 
@@ -44,7 +43,12 @@ def entities(entity_name):
         print("entry in DB not found")
     
     #Querying Server
-    result = get_entity.delay(inchi_key, return_format=return_format)
+    try:
+        result = get_entity.delay(inchi_key, return_format=return_format)
+        if result[0] != None:
+            block=True
+    except:
+        print("Query Failed")
 
     if block == False:
         abort(404)
