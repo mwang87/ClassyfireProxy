@@ -25,8 +25,10 @@ import sys
 def heartbeat():
     return "{}"
 
-@app.route('/entities/<entity_name>', methods=['GET'])
-def entities(entity_name):
+@app.route('/entities/<input_type>', methods=['GET'])
+def entities(input_type):
+    entity_name = request.args.get('entity_name', '')
+     
     block = False
     if "block" in request.values:
         block = True
@@ -35,7 +37,7 @@ def entities(entity_name):
     return_format = entity_name.split(".")[1]
     
     #figure out is the passed parameter is smiles or key
-    if "(" in inchi_key: 
+    if input_type != "inchikey":  
         inchi_key = get_entity_smiles(inchi_key, return_format=return_format)
         
     #Reading from Database
