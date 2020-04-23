@@ -18,6 +18,21 @@ celery_instance = Celery('cytoscape_tasks', backend='rpc://classyfire-mqrabbit',
 url = "http://classyfire.wishartlab.com"
 #url = "https://cfb.fiehnlab.ucdavis.edu"
 
+@celery_instance.task(trail=True)
+def get_entity_smiles(smiles, return_format="json", label=""): 
+    #query to get the id of the structure
+    r = requests.post(url + '/queries.json', data='{"label": "%s", ''"query_input": "%s", "query_type": "STRUCTURE"}'% (label, smiles),headers={"Content-Type": "application/json"})
+    query_id = r.json()['id']
+
+    entity_name = "%s.%s" % (smiles, return_format)
+
+    #actually get the info associated with the structure
+    r = requests.get('%s/queries/%s.%s' % (url,query_id, return_format))
+    full_response = json.loads(r.content)
+    inchikey = full_response["entities"][0]["inchikey"]
+    inchikey = inchikey.replace("InChIKey=","")
+    return(inchikey)
+
 @celery_instance.task(rate_limit="8/s")
 #@celery_instance.task()
 def get_entity(inchikey, return_format="json"):
