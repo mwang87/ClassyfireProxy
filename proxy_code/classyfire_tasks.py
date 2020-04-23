@@ -29,9 +29,13 @@ def get_entity_smiles(smiles, return_format="json", label=""):
     #actually get the info associated with the structure
     r = requests.get('%s/queries/%s.%s' % (url,query_id, return_format))
     full_response = json.loads(r.content)
-    inchikey = full_response["entities"][0]["inchikey"]
-    inchikey = inchikey.replace("InChIKey=","")
-    return(inchikey)
+    try:
+        inchikey = full_response["entities"][0]["inchikey"]
+        inchikey = inchikey.replace("InChIKey=","")
+        return(inchikey)
+    except:
+        raise 
+        
 
 @celery_instance.task(rate_limit="8/s")
 #@celery_instance.task()
