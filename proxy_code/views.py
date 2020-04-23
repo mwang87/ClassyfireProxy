@@ -5,7 +5,7 @@ from flask import abort, jsonify, render_template, request, redirect, url_for, m
 from app import app
 from classyfire_tasks import get_entity
 from classyfire_tasks import populate_batch_task
-
+from classyfire_tasks import get_entity_smiles
 from werkzeug.utils import secure_filename
 import os
 import glob
@@ -17,7 +17,7 @@ import urllib
 from time import sleep
 import redis
 from models import ClassyFireEntity
-
+import sys
 #redis_client = redis.Redis(host='classyfire-redis', port=6379, db=0)
 
 
@@ -30,25 +30,26 @@ def entities(entity_name):
     block = False
     if "block" in request.values:
         block = True
-
+    
     inchi_key = entity_name.split(".")[0]
     return_format = entity_name.split(".")[1]
-
+    
+    #figure out is the passed parameter is smiles or key
+    if "(" in inchi_key: 
+        inchi_key = get_entity_smiles(inchi_key, return_format=return_format)
+        
     #Reading from Database
     try:
         db_record = ClassyFireEntity.get(ClassyFireEntity.inchikey == entity_name)
-        if db_record.status == "DONE":
-            return db_record.responsetext
+        if db_record.status == "DONE":    
+            return(db_record.responsetext)
     except:
         print("entry in DB not found")
     
     #Querying Server
-    try:
-        result = get_entity.delay(inchi_key, return_format=return_format)
-        if result[0] != None:
-            block=True
-    except:
-        print("Query Failed")
+    result = get_entity.delay(inchi_key, return_format=return_format)
+    if result != None:
+        block = True
 
     if block == False:
         abort(404)
@@ -57,8 +58,8 @@ def entities(entity_name):
         if result.ready():
             break
         sleep(0.1)
-    result = result.get()
     
+    result = result.get() 
     return result
 
 @app.route('/keycount', methods=['GET'])
