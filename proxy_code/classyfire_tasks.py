@@ -18,6 +18,34 @@ celery_instance = Celery('cytoscape_tasks', backend='rpc://classyfire-mqrabbit',
 url = "http://classyfire.wishartlab.com"
 #url = "https://cfb.fiehnlab.ucdavis.edu"
 
+
+#test case url entities/fullstructure?entity_name=CN1C=NC2=C1C(=O)N(C(=O)N2C)C
+@celery_instance.task(trail=True)
+def web_query(smiles, return_format="json", label=""): 
+    """Given the smiles or InChI string for an unseen
+    structure, launch a new query"""
+
+    #query to get the id of the structure
+    r = requests.post(url + '/queries.json', data='{"label": "%s", ''"query_input": "%s", "query_type": "STRUCTURE"}'% (label, smiles),headers={"Content-Type": "application/json"}) 
+    query_id = r.json()['id'] 
+    entity_name = "%s.%s" % (smiles, return_format)
+    
+    #actually get the info associated with the structure
+    r = requests.get('%s/queries/%s.%s' % (url,query_id, return_format))
+    full_response = json.loads(r.content)
+    print(full_response, flush=True)
+    #in the event the query hasn't been finished
+    if full_response['classification_status'] == 'In Queue':
+        return("Classification failed")
+
+    #in the event the query give no results
+    if full_response['number_of_elements'] == 0:
+        return("Classification failed") 
+
+    return_text = json.dumps(full_response["entities"])
+    return(return_text)
+
+
 @celery_instance.task(rate_limit="8/s")
 #@celery_instance.task()
 def get_entity(inchikey, return_format="json"):
