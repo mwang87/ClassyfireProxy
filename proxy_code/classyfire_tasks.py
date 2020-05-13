@@ -1,5 +1,4 @@
 import requests
-
 from celery import Celery
 import subprocess
 import requests
@@ -7,9 +6,9 @@ from time import sleep
 import json
 import os
 import redis
-from models import ClassyFireEntity
+from models import ClassyFireEntity, FailCaseDB
 from app import db
-
+from app import retry_db
 print("Before Celery App")
 celery_instance = Celery('cytoscape_tasks', backend='rpc://classyfire-mqrabbit', broker='pyamqp://classyfire-mqrabbit')
 
@@ -18,7 +17,12 @@ celery_instance = Celery('cytoscape_tasks', backend='rpc://classyfire-mqrabbit',
 url = "http://classyfire.wishartlab.com"
 #url = "https://cfb.fiehnlab.ucdavis.edu"
 
-
+@celery_instance.task()
+def record_failure(entity_name):
+    FailCaseDB.create(
+            fullstructure=entity_name,
+            status="FAILED")
+    
 #test case url entities/fullstructure?entity_name=CN1C=NC2=C1C(=O)N(C(=O)N2C)C
 @celery_instance.task(trail=True)
 def web_query(smiles, return_format="json", label=""): 
@@ -34,13 +38,20 @@ def web_query(smiles, return_format="json", label=""):
     r = requests.get('%s/queries/%s.%s' % (url,query_id, return_format))
     full_response = json.loads(r.content)
     print(full_response, flush=True)
+
     #in the event the query hasn't been finished
     if full_response['classification_status'] == 'In Queue':
-        return("Classification failed")
+        sleep(10)
+        #return("Classification failed")
+    
+    r = requests.get('%s/queries/%s.%s' % (url,query_id, return_format))
+    full_response = json.loads(r.content)
+    print(full_response, flush=True)
+
 
     #in the event the query give no results
-    if full_response['number_of_elements'] == 0:
-        return("Classification failed") 
+    #if full_response['number_of_elements'] == 0:
+    #    return("Classification failed") 
 
     return_text = json.dumps(full_response["entities"])
     return(return_text)

@@ -3,7 +3,7 @@ from flask import abort, jsonify, render_template, request, redirect, url_for, m
 #from flask_cache import Cache
 
 from app import app
-from classyfire_tasks import get_entity, web_query
+from classyfire_tasks import get_entity, web_query, record_failure
 from classyfire_tasks import populate_batch_task
 
 from werkzeug.utils import secure_filename
@@ -54,6 +54,7 @@ def entities(input_type):
         classyfire_info =  web_query(entity_name)
         if classyfire_info == "Classification failed":
             print("Classification failed", flush=True)
+            record_failure(entity_name)
             abort(404)
         else: 
             #return classfication information
