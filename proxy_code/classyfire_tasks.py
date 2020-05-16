@@ -1,5 +1,4 @@
 import requests
-
 from celery import Celery
 import subprocess
 import requests
@@ -7,9 +6,9 @@ from time import sleep
 import json
 import os
 import redis
-from models import ClassyFireEntity
+from models import ClassyFireEntity, FailCaseDB
 from app import db
-
+from app import retry_db
 print("Before Celery App")
 celery_instance = Celery('cytoscape_tasks', backend='rpc://classyfire-mqrabbit', broker='pyamqp://classyfire-mqrabbit')
 
@@ -17,6 +16,37 @@ celery_instance = Celery('cytoscape_tasks', backend='rpc://classyfire-mqrabbit',
 
 url = "http://classyfire.wishartlab.com"
 #url = "https://cfb.fiehnlab.ucdavis.edu"
+
+@celery_instance.task()
+def record_failure(entity_name):
+    FailCaseDB.create(
+            fullstructure=entity_name,
+            status="FAILED")
+    
+#test case url entities/fullstructure?entity_name=CN1C=NC2=C1C(=O)N(C(=O)N2C)C
+@celery_instance.task(trail=True)
+def web_query(smiles, inchikey, return_format="json", label=""): 
+    """Given the smiles or InChI string for an unseen
+    structure, launch a new query"""
+
+    #query to get the id of the structure
+    r = requests.post(url + '/queries.json', data='{"label": "%s", ''"query_input": "%s", "query_type": "STRUCTURE"}'% (label, smiles),headers={"Content-Type": "application/json"}) 
+    query_id = r.json()['id'] 
+    entity_name = "%s.%s" % (smiles, return_format)
+    
+    #actually get the info associated with the structure
+    r = requests.get('%s/queries/%s.%s' % (url,query_id, return_format))
+    full_response = json.loads(r.content)
+    print(full_response, flush=True)
+
+    # Always wait 10 seconds
+    sleep(10)
+
+    # Trying to get the inchi back now
+    get_entity(inchikey)
+
+    return None
+
 
 @celery_instance.task(rate_limit="8/s")
 #@celery_instance.task()
@@ -34,6 +64,8 @@ def get_entity(inchikey, return_format="json"):
     >>> get_entity("ATUOYWHBWRKTHZ-UHFFFAOYSA-N", 'sdf')
     """
     entity_name = "%s.%s" % (inchikey, return_format)
+
+    db_record = None
     
     try:
         db_record = ClassyFireEntity.get(ClassyFireEntity.inchikey == entity_name)
@@ -50,20 +82,23 @@ def get_entity(inchikey, return_format="json"):
     try:
         r.raise_for_status()
     except:
-        ClassyFireEntity.create(
-            inchikey=entity_name,
-            responsetext="",
-            status="ERROR"
-        )
+        if db_record is None:
+            ClassyFireEntity.create(
+                inchikey=entity_name,
+                responsetext="",
+                status="ERROR"
+            )
         open("/data/error_keys.txt", "a").write(inchikey + "\n")
         raise
+
+    if len(r.text) < 10:
+        raise Exception
     
     try:
-        db_record = ClassyFireEntity.get(ClassyFireEntity.inchikey == entity_name)
         db_record.responsetext = r.text
         db_record.status = "DONE"
         db_record.save()
-    except:    
+    except:
         ClassyFireEntity.create(
             inchikey=entity_name,
             responsetext=r.text,

@@ -3,7 +3,7 @@ from flask import abort, jsonify, render_template, request, redirect, url_for, m
 #from flask_cache import Cache
 
 from app import app
-from classyfire_tasks import get_entity
+from classyfire_tasks import get_entity, web_query, record_failure
 from classyfire_tasks import populate_batch_task
 
 from werkzeug.utils import secure_filename
@@ -14,10 +14,10 @@ import requests
 import random
 import shutil
 import urllib
+import urllib.parse
 from time import sleep
 import redis
 from models import ClassyFireEntity
-
 #redis_client = redis.Redis(host='classyfire-redis', port=6379, db=0)
 
 
@@ -45,6 +45,16 @@ def entities(entity_name):
     
     #Querying Server
     result = get_entity.delay(inchi_key, return_format=return_format)
+
+    # Checking if we have inchi or smiles in the url, so we can ship it over to their server to classify
+    if "smiles" in request.values:
+        smiles = request.values.get("smiles")
+        classyfire_info =  web_query.delay(smiles, inchi_key)
+    elif "inchi" in request.values:
+        conversion_url = "https://gnps-structure.ucsd.edu/smiles?inchi={}".format(urllib.parse.quote(request.values.get("inchi")))
+        r = requests.get(conversion_url)
+        smiles = r.text
+        classyfire_info =  web_query.delay(smiles, inchi_key)
 
     if block == False:
         abort(404)

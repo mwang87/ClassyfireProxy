@@ -22,3 +22,4 @@ app = CustomFlask(__name__)
 app.config.from_object(__name__)
 
 db = SqliteDatabase("/data/database.db", pragmas=[('journal_mode', 'wal')])
+retry_db = SqliteDatabase("/data/retrydatabase.db", pragmas=[('journal_mode', 'wal')])
