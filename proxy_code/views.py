@@ -14,6 +14,7 @@ import requests
 import random
 import shutil
 import urllib
+import urllib.parse
 from time import sleep
 import redis
 from models import ClassyFireEntity
@@ -24,42 +25,37 @@ from models import ClassyFireEntity
 def heartbeat():
     return "{}"
 
-@app.route('/entities/<input_type>', methods=['GET'])
-def entities(input_type):
-    #url encode the actual smiles/inchi/inhcikey
-    entity_name = request.args.get('entity_name', '')   
+@app.route('/entities/<entity_name>', methods=['GET'])
+def entities(entity_name):
     block = False
 
     if "block" in request.values:
         block = True
-    
-    #in the event we've been given an inchikey
-    if input_type == "inchikey":
-        inchi_key = entity_name.split(".")[0]
-        return_format = entity_name.split(".")[1]
 
-        #Reading from Database
-        try:
-            db_record = ClassyFireEntity.get(ClassyFireEntity.inchikey == entity_name)
-            if db_record.status == "DONE":
-                return db_record.responsetext
-        except:
-            print("entry in DB not found")
-    
-        #Querying Server
-        result = get_entity.delay(inchi_key, return_format=return_format)
+    inchi_key = entity_name.split(".")[0]
+    return_format = entity_name.split(".")[1]
 
-	#if the full strucutre is provided as an inchi/smiles
-    if input_type == "fullstructure": 
-        classyfire_info =  web_query(entity_name)
-        if classyfire_info == "Classification failed":
-            print("Classification failed", flush=True)
-            record_failure(entity_name)
-            abort(404)
-        else: 
-            #return classfication information
-            return(classyfire_info)
+    #Reading from Database
+    try:
+        db_record = ClassyFireEntity.get(ClassyFireEntity.inchikey == entity_name)
+        if db_record.status == "DONE":
+            return db_record.responsetext
+    except:
+        print("entry in DB not found")
     
+    #Querying Server
+    result = get_entity.delay(inchi_key, return_format=return_format)
+
+    # Checking if we have inchi or smiles in the url, so we can ship it over to their server to classify
+    if "smiles" in request.values:
+        smiles = request.values.get("smiles")
+        classyfire_info =  web_query.delay(smiles, inchi_key)
+    elif "inchi" in request.values:
+        conversion_url = "https://gnps-structure.ucsd.edu/smiles?inchi={}".format(urllib.parse.quote(request.values.get("inchi")))
+        r = requests.get(conversion_url)
+        smiles = r.text
+        classyfire_info =  web_query.delay(smiles, inchi_key)
+
     if block == False:
         abort(404)
 
@@ -67,7 +63,8 @@ def entities(input_type):
         if result.ready():
             break
         sleep(0.1)
-    result = result.get() 
+    result = result.get()
+    
     return result
 
 @app.route('/keycount', methods=['GET'])
