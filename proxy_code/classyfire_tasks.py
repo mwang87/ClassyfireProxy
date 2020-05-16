@@ -24,8 +24,8 @@ def record_failure(entity_name):
             status="FAILED")
     
 #test case url entities/fullstructure?entity_name=CN1C=NC2=C1C(=O)N(C(=O)N2C)C
-@celery_instance.task(trail=True)
-def web_query(smiles, inchikey, return_format="json", label=""): 
+@celery_instance.task(trail=True, rate_limit="1/m")
+def classify_full_structure(smiles, inchikey, return_format="json", label=""): 
     """Given the smiles or InChI string for an unseen
     structure, launch a new query"""
 
