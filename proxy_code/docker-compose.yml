@@ -14,6 +14,11 @@ services:
     volumes:
     - ../cache:/data
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4000M
+
   classyfire-worker1:
     build: .
     container_name: classyfireproxy_worker1
@@ -26,6 +31,11 @@ services:
       - default
     volumes:
     - ../cache:/data
+    deploy:
+      resources:
+        limits:
+          memory: 4000M
+
   classyfire-redis:
     image: redis
     container_name: classyfireproxy_redis
@@ -34,11 +44,20 @@ services:
     volumes:
     - ../cache:/data
     command: ["redis-server", "--appendonly", "yes"]
+    deploy:
+      resources:
+        limits:
+          memory: 2000M
+
   classyfire-mqrabbit:
     image: rabbitmq:latest
     container_name: classyfireproxy_mqrabbit
     networks:
       - default
-    
+    deploy:
+      resources:
+        limits:
+          memory: 2000M
+  
 
 

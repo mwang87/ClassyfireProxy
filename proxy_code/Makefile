@@ -3,15 +3,15 @@ build:
 
 server-compose-interactive:
 	docker-compose build
-	docker-compose up
+	docker-compose --compatibility up
 
 server-compose:
 	docker-compose build
-	docker-compose up -d
+	docker-compose --compatibility up -d
 
 server-compose-production:
 	docker-compose build
-	docker-compose -f docker-compose.yml -f docker-compose-production.yml up -d
+	docker-compose -f docker-compose.yml -f docker-compose-production.yml --compatibility up -d
 
 bash:
 	docker run -it classyfireproxy /bin/bash 

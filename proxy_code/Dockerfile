@@ -1,21 +1,9 @@
-FROM ubuntu:18.04
+FROM continuumio/miniconda3:4.7.12
 MAINTAINER Mingxun Wang "mwang87@gmail.com"
 
-RUN apt-get update -y
-RUN apt-get install -y python3-pip python3-dev build-essential
-
-RUN pip3 install flask
-RUN pip3 install gunicorn
-RUN pip3 install requests
-
-RUN pip3 install pathvalidate
-RUN pip3 install psutil
-RUN pip3 install redis
-RUN pip3 install -U Celery
-RUN pip3 install pyamqp
-RUN pip3 install pyMolNetEnhancer
-RUN pip3 install requests_cache
-RUN pip3 install peewee
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+RUN apt-get update && apt-get install -y build-essential
 
 COPY . /app
 WORKDIR /app
