@@ -44,7 +44,7 @@ def entities(entity_name):
         print("entry in DB not found")
     
     #Querying Server
-    #result = get_entity.delay(inchi_key, return_format=return_format)
+    result = get_entity.delay(inchi_key, return_format=return_format)
 
     # Checking if we have inchi or smiles in the url, so we can ship it over to their server to classify
     if "smiles" in request.values:
