@@ -44,17 +44,17 @@ def entities(entity_name):
         print("entry in DB not found")
     
     #Querying Server
-    result = get_entity.delay(inchi_key, return_format=return_format)
+    #result = get_entity.delay(inchi_key, return_format=return_format)
 
     # Checking if we have inchi or smiles in the url, so we can ship it over to their server to classify
     if "smiles" in request.values:
         smiles = request.values.get("smiles")
-        classyfire_info =  classify_full_structure.delay(smiles, inchi_key)
+        #classyfire_info =  classify_full_structure.delay(smiles, inchi_key)
     elif "inchi" in request.values:
         conversion_url = "https://gnps-structure.ucsd.edu/smiles?inchi={}".format(urllib.parse.quote(request.values.get("inchi")))
         r = requests.get(conversion_url)
         smiles = r.text
-        classyfire_info =  classify_full_structure.delay(smiles, inchi_key)
+        #classyfire_info =  classify_full_structure.delay(smiles, inchi_key)
 
     if block == False:
         abort(404)
