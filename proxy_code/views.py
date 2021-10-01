@@ -41,7 +41,8 @@ def entities(entity_name):
         if db_record.status == "DONE":
             return db_record.responsetext
     except:
-        print("entry in DB not found")
+        #print("entry in DB not found")
+        pass
     
     #Querying Server
     result = get_entity.delay(inchi_key, return_format=return_format)
