@@ -29,8 +29,8 @@ def heartbeat():
 def entities(entity_name):
     block = False
 
-    if "block" in request.values:
-        block = True
+    #if "block" in request.values:
+    #    block = True
 
     inchi_key = entity_name.split(".")[0]
     return_format = entity_name.split(".")[1]
