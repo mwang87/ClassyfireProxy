@@ -48,7 +48,7 @@ def classify_full_structure(smiles, inchikey, return_format="json", label=""):
     return None
 
 
-@celery_instance.task(rate_limit="60/m")
+@celery_instance.task(rate_limit="10/m")
 #@celery_instance.task()
 def get_entity(inchikey, return_format="json"):
     """Given a InChIKey for a previously queried structure, fetch the

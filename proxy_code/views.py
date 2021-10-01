@@ -56,16 +56,18 @@ def entities(entity_name):
         smiles = r.text
         #classyfire_info =  classify_full_structure.delay(smiles, inchi_key)
 
-    if block == False:
-        abort(404)
+    return "Key not found, try again later as we update our cache", 404
 
-    while(1):
-        if result.ready():
-            break
-        sleep(0.1)
-    result = result.get()
+    # if block == False:
+    #     abort(404)
+
+    # while(1):
+    #     if result.ready():
+    #         break
+    #     sleep(0.1)
+    # result = result.get()
     
-    return result
+    # return result
 
 @app.route('/keycount', methods=['GET'])
 def keycount():
