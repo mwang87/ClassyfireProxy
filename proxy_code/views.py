@@ -48,14 +48,14 @@ def entities(entity_name):
     result = get_entity.delay(inchi_key, return_format=return_format)
 
     # Checking if we have inchi or smiles in the url, so we can ship it over to their server to classify
-    if "smiles" in request.values:
-        smiles = request.values.get("smiles")
-        #classyfire_info =  classify_full_structure.delay(smiles, inchi_key)
-    elif "inchi" in request.values:
-        conversion_url = "https://gnps-structure.ucsd.edu/smiles?inchi={}".format(urllib.parse.quote(request.values.get("inchi")))
-        r = requests.get(conversion_url)
-        smiles = r.text
-        #classyfire_info =  classify_full_structure.delay(smiles, inchi_key)
+    # if "smiles" in request.values:
+    #     smiles = request.values.get("smiles")
+    #     #classyfire_info =  classify_full_structure.delay(smiles, inchi_key)
+    # elif "inchi" in request.values:
+    #     conversion_url = "https://gnps-structure.ucsd.edu/smiles?inchi={}".format(urllib.parse.quote(request.values.get("inchi")))
+    #     r = requests.get(conversion_url)
+    #     smiles = r.text
+    #     #classyfire_info =  classify_full_structure.delay(smiles, inchi_key)
 
     return "Key not found, try again later as we update our cache", 404
 
@@ -74,27 +74,27 @@ def entities(entity_name):
 def keycount():
     return str(ClassyFireEntity.select().count())
 
-@app.route('/keycounterror', methods=['GET'])
-def keycounterror():
-    return str(ClassyFireEntity.select().where(ClassyFireEntity.status == "ERROR").count())
+# @app.route('/keycounterror', methods=['GET'])
+# def keycounterror():
+#     return str(ClassyFireEntity.select().where(ClassyFireEntity.status == "ERROR").count())
 
 ### TODO: Fix
-@app.route('/errorkeys.json', methods=['GET'])
-def errorkeysjson():
-    output_keys = []
-    for entry in ClassyFireEntity.select().where(ClassyFireEntity.status == "ERROR"):
-        output_keys.append(entry.inchikey.replace(".json", ""))
+# @app.route('/errorkeys.json', methods=['GET'])
+# def errorkeysjson():
+#     output_keys = []
+#     for entry in ClassyFireEntity.select().where(ClassyFireEntity.status == "ERROR"):
+#         output_keys.append(entry.inchikey.replace(".json", ""))
 
-    return json.dumps(output_keys)
+#     return json.dumps(output_keys)
 
 ### TODO: Fix
-@app.route('/errorkeys.txt', methods=['GET'])
-def errorkeystxt():
-    output_keys = []
-    for entry in ClassyFireEntity.select().where(ClassyFireEntity.status == "ERROR"):
-        output_keys.append(entry.inchikey.replace(".json", ""))
+# @app.route('/errorkeys.txt', methods=['GET'])
+# def errorkeystxt():
+#     output_keys = []
+#     for entry in ClassyFireEntity.select().where(ClassyFireEntity.status == "ERROR"):
+#         output_keys.append(entry.inchikey.replace(".json", ""))
 
-    return "\n".join(output_keys)
+#     return "\n".join(output_keys)
 
 
 @app.route('/populatebatch', methods=['GET'])
