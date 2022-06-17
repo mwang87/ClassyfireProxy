@@ -13,11 +13,12 @@ services:
       - default
     volumes:
     - ../cache:/data
+    - ../logs:/app/logs
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          memory: 4000M
+          memory: 8000M
 
   classyfire-worker1:
     build: .
