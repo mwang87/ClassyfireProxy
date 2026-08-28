@@ -1,4 +1,11 @@
 version: '3'
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   classyfire-web:
     build: .
@@ -15,6 +22,7 @@ services:
     - ../cache:/data
     - ../logs:/app/logs
     restart: unless-stopped
+    logging: *default-logging
     deploy:
       resources:
         limits:
@@ -25,6 +33,7 @@ services:
     container_name: classyfireproxy_worker1
     command: /app/run_celery_worker.sh
     restart: unless-stopped
+    logging: *default-logging
     depends_on: 
       - classyfire-redis
       - classyfire-mqrabbit
@@ -45,6 +54,7 @@ services:
     volumes:
     - ../cache:/data
     command: ["redis-server", "--appendonly", "yes"]
+    logging: *default-logging
     deploy:
       resources:
         limits:
@@ -55,10 +65,10 @@ services:
     container_name: classyfireproxy_mqrabbit
     networks:
       - default
+    logging: *default-logging
     deploy:
       resources:
         limits:
           memory: 8000M
   
-
 
